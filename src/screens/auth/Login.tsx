@@ -18,7 +18,7 @@ export default function Login() {
     setLoading(true);
 
     try {
-      const result = await postJson<LoginOk>('/login', { email, password });
+      await postJson<LoginOk>('/login', { email, password });
       navigate("/me");
     } catch (err: any) {
       const api: ApiErr | undefined = err?.data;
