@@ -1,11 +1,12 @@
 import { useState } from 'react';
-import { postJson, getJson } from '@app/lib/http';
+import { useNavigate } from "react-router-dom";
+import { postJson } from '@app/lib/http';
 
 type LoginOk = { ok: true; user: { id: number; email: string } };
-type MeOk    = { ok: true; user: { id: number; email: string }, token: string | null };
 type ApiErr  = { ok: false; code: string; message: string };
 
 export default function Login() {
+  const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [msg, setMsg] = useState<string|null>(null);
@@ -13,14 +14,12 @@ export default function Login() {
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
-    setMsg(null); setLoading(true);
-    try {
-      // 1) login (sets session cookie)
-      await postJson<LoginOk>('/login', { email, password });
+    setMsg(null);
+    setLoading(true);
 
-      // 2) fetch /me to get API token
-      const me = await getJson<MeOk>('/me');
-      setMsg(`✅ Hello ${me.user.email}${me.token ? ` — API token: ${me.token}` : ''}`);
+    try {
+      const result = await postJson<LoginOk>('/login', { email, password });
+      navigate("/me");
     } catch (err: any) {
       const api: ApiErr | undefined = err?.data;
       setMsg(`❌ ${api?.message || err.message}`);

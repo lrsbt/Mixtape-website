@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
+import { Link } from 'react-router-dom';
 import { getJson } from "@app/lib/http";
+import { API_URL } from "@app/constants";
 
 type MeResponse = {
   ok: boolean;
@@ -27,10 +29,14 @@ const MyProfile = () => {
   if (!me.ok) return <div>Not logged in ({me.message})</div>;
 
   return (
-    <div style={{ padding: 16 }}>
+    <div>
       <h1>Profile</h1>
       <p>Email: {me.user?.email}</p>
       <p>API key: {me.user?.token}</p>
+      <audio controls src={`${API_URL}/myMix?ts=${Date.now()}`} />
+      <div>
+        <Link to="/logout">Log out</Link>
+      </div>
     </div>
   );
 };
