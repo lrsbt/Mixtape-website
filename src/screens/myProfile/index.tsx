@@ -8,8 +8,8 @@ type MeResponse = {
   user?: {
     id: number;
     email: string;
-    token: string | null;
   };
+  token: string | null;
   code?: string;
   message?: string;
 };
@@ -28,11 +28,13 @@ const MyProfile = () => {
   if (!me) return <div>Loading...</div>;
   if (!me.ok) return <div>Not logged in ({me.message})</div>;
 
+  console.log(me);
+
   return (
     <div>
       <h1>Profile</h1>
       <p>Email: {me.user?.email}</p>
-      <p>API key: {me.user?.token}</p>
+      <p>API token: {me.token}</p>
       <audio controls src={`${API_URL}/myMix?ts=${Date.now()}`} />
       <div>
         <Link to="/logout">Log out</Link>
