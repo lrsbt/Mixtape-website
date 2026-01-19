@@ -16,7 +16,10 @@ export default function Signup() {
     setLoading(true);
     try {
       const res = await postJson<SignupOk>('/signup', { email, password });
-      setMsg(`✅ Signed up as ${res.user.email}. Your API token: ${res.token}`);
+      // Message
+      // setMsg(`✅ Signed up as ${res.user.email}. Your API token: ${res.token}`);
+      // Redirect
+      if (res.ok) { window.location.href = '/me'; } else { console.error(res); }
     } catch (err: any) {
       const api: ApiErr | undefined = err?.data;
       setMsg(`❌ ${api?.message || err.message}`);
