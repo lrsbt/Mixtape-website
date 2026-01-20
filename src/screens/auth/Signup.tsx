@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSignupMutation } from "@app/hooks/query";
+import type { AxiosError } from "axios";
 
 const Signup = () => {
   const navigate = useNavigate();
@@ -15,7 +16,8 @@ const Signup = () => {
       await signUpMutation.mutateAsync({ email, password });
       navigate("/me");
     } catch (err) {
-      console.log("error", err?.message);
+      const axiosErr = err as AxiosError<{ message?: string }>;
+      console.log("error", axiosErr?.message);
       setMsg("There's a problem with the signup");
     }
   };

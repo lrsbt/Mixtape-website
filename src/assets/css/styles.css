@@ -10,3 +10,14 @@
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
+
+
+.list {
+  margin-right: 5px;
+  text-decoration: none;
+  color: inherit;
+}
+
+.list--selected {
+  text-decoration: underline;
+}
