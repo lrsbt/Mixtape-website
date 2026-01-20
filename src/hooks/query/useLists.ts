@@ -11,9 +11,7 @@ export const useLists = () => {
     queryFn: () =>
       axios
         .get(`${API_URL}/lists`, { withCredentials: true })
-        .then((res) => res.data),
-    retry: false, // don't retry on failure (e.g. not logged in)
-    staleTime: 5 * 60 * 1000, // cache for 5 minutes
+        .then((res) => res.data)
   });
 
   return {
