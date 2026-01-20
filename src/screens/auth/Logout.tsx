@@ -1,26 +1,17 @@
-import { useEffect, useState } from 'react';
-import { postJson } from '@app/lib/http';
-
-type LogoutOk = { ok: true };
+import { useEffect } from "react";
+import { persister, queryClient } from "@app/hooks/query";
+import { useLogout } from "@app/hooks/query";
 
 const Logout = () => {
-  const [success, setSuccess] = useState(false);
+  const { mutate: logout, isSuccess } = useLogout();
 
   useEffect(() => {
-    handleLogout()
-  }, [])
+    queryClient.removeQueries();
+    persister.removeClient();
+    logout();
+  }, []);
 
-  const handleLogout = async () => {
-    const result = await postJson<LogoutOk>('/logout', {});
-    setSuccess(result.ok);
-    setTimeout(() => window.location.href = "/login", 1000);
-  }
+  return isSuccess && <div>You are now logged out</div>;
+};
 
-  return (
-    <div>
-      {success && <div>You are now logged out</div>}
-    </div>
-  );
-}
-
-export default Logout;
+export { Logout };
