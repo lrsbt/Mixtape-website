@@ -2,28 +2,50 @@ import classNames from "classnames";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { API_URL } from "@app/constants";
-import { useAuth, useLists } from "@app/hooks/query";
-
+import { useAuth, useLists, useMixStatus } from "@app/hooks/query";
+import type { ListItem, Me } from "../../types/api";
 
 const MyProfile = () => {
-  const { user, token, isLoading } = useAuth();
+  const { user, token, isLoading: isLoadingUser } = useAuth();
   const { lists } = useLists();
-  const [selectedListId, setSelectedListId] = useState<number | null>(1);
+  const initialList = lists?.[0]?.id;
 
-  if (isLoading) return <p>Loading</p>;
+  if (!user || !token) return null;
+  if (!lists || !initialList) return null;
+  if (isLoadingUser) return <p>Loading</p>;
 
-  const Lists = () => {
-    if (!lists) return;
+  return <Content
+    user={user}
+    token={token}
+    lists={lists}
+    initialList={initialList}
+  />
 
-    return lists.map(list => {
-      return <a
-        href="#"
-        className={classNames("list", { 'list--selected' : selectedListId === list.id })}
-        onClick={() => setSelectedListId(list.id)}>
-          {list.name}
-        </a>
-    })
-  }
+};
+
+interface ContentProps {
+  lists: ListItem[],
+  initialList: number,
+  user: Me['user'],
+  token: Me['token']
+}
+
+const Content = ({ lists, initialList, user, token }: ContentProps) => {
+  const [selectedList, setSelectedList] = useState<number>(initialList);
+  const { mixStatus, isLoading } = useMixStatus(selectedList);
+
+  console.log('x', mixStatus );
+
+  const Lists = () => (
+      lists.map(list => (
+        <a
+          href="#"
+          className={classNames("list", { 'list--selected' : selectedList === list.id })}
+          onClick={() => setSelectedList(list.id)}>
+            {list.name}
+          </a>
+      ))
+  )
 
   return (
     <div>
@@ -31,12 +53,19 @@ const MyProfile = () => {
       <p>Email: {user?.email}</p>
       <p>API token: {token}</p>
       <p>Lists: <Lists /></p>
-      <audio controls src={`${API_URL}/myMix?ts=${Date.now()}&listId=${selectedListId}`} />
+      {isLoading && <div>Loading</div>}
+      {mixStatus?.state === "mixing" && <div>Mix in progress</div>}
+      {mixStatus?.state === "empty" && <div>No Recordings yet</div>}
+      {mixStatus?.state === "ready" && (
+      <audio controls key={mixStatus.entriesHash}>
+        <source src={`${API_URL}/myMix?listId=${selectedList}`} type="audio/mpeg" />
+      </audio>
+      )}
       <div>
         <Link to="/logout">Log out</Link>
       </div>
     </div>
   );
-};
+}
 
 export { MyProfile };
