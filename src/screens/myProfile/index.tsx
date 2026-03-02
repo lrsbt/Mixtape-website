@@ -34,8 +34,6 @@ const Content = ({ lists, initialList, user, token }: ContentProps) => {
   const [selectedList, setSelectedList] = useState<number>(initialList);
   const { mixStatus, isLoading } = useMixStatus(selectedList);
 
-  console.log('x', mixStatus );
-
   const Lists = () => (
       lists.map(list => (
         <a
