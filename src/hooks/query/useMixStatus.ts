@@ -3,10 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { cacheKeys } from "@app/constants/cacheKeys";
 
 import { API_URL } from "@app/constants";
-
-type MixStatus =
-  | { ok: true; state: "ready", entriesHash: string }
-  | { ok: false; state: "mixing" | "empty" };
+import type { MixStatus } from "@app/types/api";
 
 export const useMixStatus = (listId: number) => {
   const query = useQuery({

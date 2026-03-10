@@ -15,3 +15,14 @@ export interface ListItem {
 }
 
 export type Lists = ListItem[];
+
+export type StatusEntry = {
+  id: number;
+  file: string;
+  startAt: number;
+  duration: number;
+}
+
+export type MixStatus =
+  | { ok: true; state: "ready", entries: StatusEntry[], entriesHash: string, times: number[]; }
+  | { ok: false; state: "mixing" | "empty" };

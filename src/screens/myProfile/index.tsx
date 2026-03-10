@@ -1,9 +1,9 @@
 import classNames from "classnames";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { API_URL } from "@app/constants";
 import { useAuth, useLists, useMixStatus } from "@app/hooks/query";
-import type { ListItem, Me } from "../../types/api";
+import type { ListItem, Me, StatusEntry } from "@app/types/api";
 
 const MyProfile = () => {
   const { user, token, isLoading: isLoadingUser } = useAuth();
@@ -31,19 +31,57 @@ interface ContentProps {
 }
 
 const Content = ({ lists, initialList, user, token }: ContentProps) => {
+  const audioRef = useRef<HTMLAudioElement | null>(null);
   const [selectedList, setSelectedList] = useState<number>(initialList);
   const { mixStatus, isLoading } = useMixStatus(selectedList);
+  const [currentBlock, setCurrentBlock] = useState(0);
+
+  const navigateTo = (sec: number) => {
+    if (audioRef.current) audioRef.current.currentTime = sec;
+  }
+
+  const onTimeUpdate = () => {
+    if (!audioRef.current) return;
+    if (mixStatus?.state != "ready") return;
+
+    const times = mixStatus.times;
+    const currentTime = audioRef.current.currentTime;
+
+    // SetCurrentBlock Logic
+    for (let i = 0; i < times.length; i++) {
+      const startTime = times[i];
+      const endTime = times[i + 1] ?? Infinity;
+
+      if (currentTime >= startTime && currentTime < endTime) {
+        setCurrentBlock((prev) => (prev === i ? prev : i));  // only update when something changes
+        break;
+      }
+    }
+  }
 
   const Lists = () => (
-      lists.map(list => (
-        <a
-          href="#"
-          className={classNames("list", { 'list--selected' : selectedList === list.id })}
-          onClick={() => setSelectedList(list.id)}>
-            {list.name}
-          </a>
-      ))
+    lists.map(list => (
+      <a
+        href="#"
+        className={classNames("list", { 'list--selected': selectedList === list.id })}
+        onClick={() => setSelectedList(list.id)}>
+        {list.name}
+      </a>
+    ))
   )
+
+  const Blocks = ({ items }: { items: StatusEntry[] }) => {
+    return <div className="blocks">
+      {items.map((b, i) => {
+        const isCurrent = currentBlock === i;
+        const className = classNames("blocks-item", { "blocks-item--selected": isCurrent });
+        return <div
+          className={className}
+          onClick={() => navigateTo(b.startAt)}
+        />
+      })}
+    </div>
+  }
 
   return (
     <div>
@@ -55,9 +93,16 @@ const Content = ({ lists, initialList, user, token }: ContentProps) => {
       {mixStatus?.state === "mixing" && <div>Mix in progress</div>}
       {mixStatus?.state === "empty" && <div>No Recordings yet</div>}
       {mixStatus?.state === "ready" && (
-      <audio controls key={mixStatus.entriesHash}>
-        <source src={`${API_URL}/myMix?listId=${selectedList}`} type="audio/mpeg" />
-      </audio>
+        <>
+          <Blocks items={mixStatus.entries} />
+          <audio
+            ref={audioRef}
+            key={mixStatus.entriesHash}
+            src={`${API_URL}/myMix?listId=${selectedList}`}
+            controls
+            onTimeUpdate={onTimeUpdate}
+          />
+        </>
       )}
       <div>
         <Link to="/logout">Log out</Link>
